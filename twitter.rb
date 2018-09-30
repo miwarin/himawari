@@ -3,6 +3,7 @@
 # @_himawari_h
 #
 
+require 'a3rt/talk'
 require 'twitter'
 require 'pp'
 
@@ -23,6 +24,13 @@ module Himawari
       puts @client.user.name          # アカウント名
       puts @client.user.description   # プロフィール
       puts @client.user.tweets_count  # ツイート数
+#      puts "-------------- fliends -------------------"
+#      pp @client.friends
+#      puts "-------------- fliends -------------------"
+      
+#      puts "-------------- followers -------------------"
+#      pp @client.followers
+#      puts "-------------- followers -------------------"
     end
 
     def muscle_training?()
@@ -36,12 +44,29 @@ module Himawari
         
       }
     end
+
+    def reply()
+      @client.followers.each {|follower|
+        puts "follower.screen_name #{follower.screen_name}"
+        @client.user_timeline(follower.screen_name, {count: 1}).each {|tweet|
+          api_key = "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+          resp = A3rt::Talk.talk(tweet.text, api_key)
+          rep = resp.least_perplex.reply
+          puts "    #{rep}"
+          @client.update("@#{tweet.user.screen_name} #{rep}", in_reply_to_status_id: tweet.id)
+        }
+      }
+    end
+
+
   end # class Himawari
 end # module Himawari
 
 def main(argv)
   himawari = Himawari::Himawari.new()
-  himawari.muscle_training?()
+#  himawari.show_my_profile()
+#  himawari.muscle_training?()
+  himawari.reply()
 end
 
 main(ARGV)
